@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <X11/Xatom.h>
 #include "windowlab.h"
 
 Client *find_client(Window w, int mode)
@@ -389,4 +390,39 @@ void draw_close_button(Client *c, GC *detail_gc, GC *background_gc)
 	XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset, topleft_offset + 7, x + topleft_offset + 7, topleft_offset);
 	XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 1, topleft_offset + 7, x + topleft_offset + 7, topleft_offset + 1);
 	XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 1, topleft_offset + 8, x + topleft_offset + 8, topleft_offset + 1);
+}
+
+
+
+static int
+gettextprop(Window w, Atom atom, char *text, unsigned int size)
+{
+	char **list = NULL;
+	int n;
+	XTextProperty name;
+
+	if (!text || size == 0)
+		return 0;
+	text[0] = '\0';
+	if (!XGetTextProperty(dsply, w, &name, atom) || !name.nitems)
+		return 0;
+	if (name.encoding == XA_STRING)
+		strncpy(text, (char *)name.value, size - 1);
+	else {
+		if (XmbTextPropertyToTextList(dsply, &name, &list, &n) >= Success && n > 0 && *list) {
+			strncpy(text, *list, size - 1);
+			XFreeStringList(list);
+		}
+	}
+	text[size - 1] = '\0';
+	XFree(name.value);
+	return 1;
+}
+
+void
+update_title(Client *c) {
+	if (!gettextprop(c->window, net_wm_name, c->name, sizeof c->name))
+		gettextprop(c->window, XA_WM_NAME, c->name, sizeof c->name);
+	if (c->name[0] == '\0') /* hack to mark broken clients */
+		strcpy(c->name, "broken");
 }
