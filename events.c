@@ -498,19 +498,16 @@ static void handle_property_change(XPropertyEvent *e)
 	{
 		switch (e->atom)
 		{
-			case XA_WM_NAME:
-				if (c->name)
-				{
-					XFree(c->name);
-					c->name = NULL;
-				}
-				XFetchName(dsply, c->window, &c->name);
-				redraw(c);
-				redraw_taskbar();
+			default:
 				break;
 			case XA_WM_NORMAL_HINTS:
 				XGetWMNormalHints(dsply, c->window, c->size, &dummy);
 				break;
+		}
+		if (e->atom == XA_WM_NAME || e->atom == net_wm_name) {
+			update_title(c);
+			redraw(c);
+			redraw_taskbar();
 		}
 	}
 }

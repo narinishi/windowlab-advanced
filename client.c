@@ -164,10 +164,6 @@ void remove_client(Client *c, int mode)
 			}
 		}
 	}
-	if (c->name != NULL)
-	{
-		XFree(c->name);
-	}
 	if (c->size)
 	{
 		XFree(c->size);

@@ -197,7 +197,7 @@ typedef struct PropMwmHints
 typedef struct Client
 {
 	struct Client *next;
-	char *name;
+	char name[256];
 	XSizeHints *size;
 	Window window, frame, trans;
 	Colormap cmap;
@@ -248,7 +248,7 @@ extern XftColor xft_detail;
 extern GC border_gc, text_gc, active_gc, depressed_gc, inactive_gc, menu_gc, selected_gc, empty_gc;
 extern XColor border_col, text_col, active_col, depressed_col, inactive_col, menu_col, selected_col, empty_col;
 extern Cursor resize_curs;
-extern Atom wm_state, wm_change_state, wm_protos, wm_delete, wm_cmapwins;
+extern Atom wm_state, wm_change_state, wm_protos, wm_delete, wm_cmapwins, net_wm_name;
 #ifdef MWM_HINTS
 extern Atom mwm_hints;
 #endif
@@ -277,6 +277,7 @@ extern Client *get_prev_focused(void);
 extern void draw_hide_button(Client *, GC *, GC *);
 extern void draw_toggledepth_button(Client *, GC *, GC *);
 extern void draw_close_button(Client *, GC *, GC *);
+extern void update_title(Client *);
 
 // new.c
 extern void make_new_client(Window);
