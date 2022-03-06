@@ -156,7 +156,9 @@ static void handle_button_press(XButtonEvent *e)
 		if (e->button == Button3)
 		{
 			rclick_root();
-		}
+		} else {
+            XAllowEvents(dsply, ReplayPointer, CurrentTime);
+        }
 	}
 	else if (e->window == taskbar)
 	{
