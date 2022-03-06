@@ -81,7 +81,7 @@ typedef struct PropMwmHints
 
 // if you aren't sure about DEF_FONT, change it to "fixed"; almost all X installations will have that available
 #ifdef XFT
-#define DEF_FONT "Ubuntu:size=14"
+#define DEF_FONT "Ubuntu:size=12"
 #else
 #define DEF_FONT "-b&h-lucida-medium-r-*-*-10-*-*-*-*-*-*-*"
 #endif

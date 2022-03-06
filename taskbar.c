@@ -286,7 +286,7 @@ void rclick_root(void)
 void redraw_taskbar(void)
 {
 	unsigned int i;
-	int button_startx = 0, button_iwidth = 0;
+	int button_startx = 0, button_iwidth;
 	float button_width;
 	Client *c;
 
@@ -300,11 +300,9 @@ void redraw_taskbar(void)
 
 	for (c = head_client, i = 0; c != NULL; c = c->next, i++)
 	{
-		button_iwidth = (unsigned int)(((i + 1) * button_width) - button_startx);
-		if (button_startx != 0)
-		{
-			XDrawLine(dsply, taskbar, border_gc, button_startx - 1, 0, button_startx - 1, BARHEIGHT() - DEF_BORDERWIDTH);
-		}
+		button_iwidth = button_width;
+        XDrawLine(dsply, taskbar, border_gc, button_startx + button_iwidth - 1, 0, button_startx + button_iwidth - 1, BARHEIGHT() - DEF_BORDERWIDTH);
+		button_iwidth--; /* don't overdraw the line */
 		if (c == focused_client)
 		{
 			XFillRectangle(dsply, taskbar, active_gc, button_startx, 0, button_iwidth, BARHEIGHT() - DEF_BORDERWIDTH);
