@@ -81,7 +81,7 @@ typedef struct PropMwmHints
 
 // if you aren't sure about DEF_FONT, change it to "fixed"; almost all X installations will have that available
 #ifdef XFT
-#define DEF_FONT "-bitstream-bitstream vera sans-medium-r-*-*-*-100-*-*-*-*-*-*"
+#define DEF_FONT "Ubuntu:size=14"
 #else
 #define DEF_FONT "-b&h-lucida-medium-r-*-*-10-*-*-*-*-*-*-*"
 #endif
@@ -100,7 +100,7 @@ typedef struct PropMwmHints
 
 // change MODIFIER to None to remove the need to hold down a modifier key
 // the Windows key should be Mod4Mask and the Alt key is Mod1Mask
-#define MODIFIER Mod1Mask
+#define MODIFIER Mod4Mask
 
 // keys may be used by other apps, so change them here
 #define KEY_CYCLEPREV XK_Tab
