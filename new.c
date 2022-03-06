@@ -62,7 +62,6 @@ void make_new_client(Window w)
 	XGrabServer(dsply);
 
 	XGetTransientForHint(dsply, w, &c->trans);
-	update_title(c);
 	XGetWindowAttributes(dsply, w, &attr);
 
 	c->window = w;
@@ -79,6 +78,7 @@ void make_new_client(Window w)
 	c->cmap = attr.colormap;
 	c->size = XAllocSizeHints();
 	XGetWMNormalHints(dsply, c->window, c->size, &dummy);
+	update_title(c);
 #ifdef MWM_HINTS
 	c->has_title = 1;
 	c->has_border = 1;
