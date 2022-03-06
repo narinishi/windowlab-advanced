@@ -311,6 +311,8 @@ void check_focus(Client *c)
 	{
 		XSetInputFocus(dsply, c->window, RevertToNone, CurrentTime);
 		XInstallColormap(dsply, c->cmap);
+	} else {
+		XSetInputFocus(dsply, PointerRoot, RevertToPointerRoot, CurrentTime);
 	}
 	if (c != focused_client)
 	{
