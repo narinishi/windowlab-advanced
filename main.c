@@ -22,6 +22,7 @@
 #include <signal.h>
 #include <X11/cursorfont.h>
 #include "windowlab.h"
+#include <locale.h>
 
 Display *dsply = NULL;
 Window root;
@@ -93,6 +94,8 @@ int main(int argc, char **argv)
 		err("usage:\n  windowlab [options]\n\noptions are:\n  -font <font>\n  -border|-text|-active|-inactive|-menu|-selected|-empty <color>\n  -about\n  -display <display>");
 		return 2;
 	}
+
+    setlocale(LC_ALL, "");
 
 	act.sa_handler = sig_handler;
 	act.sa_flags = 0;
@@ -256,7 +259,7 @@ static void setup_display(void)
 	gv.foreground = empty_col.pixel;
 	empty_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);
 
-	sattr.event_mask = ChildMask|ColormapChangeMask|ButtonMask;
+	sattr.event_mask = ChildMask|ColormapChangeMask|ButtonMask|PropertyChangeMask;
 	XChangeWindowAttributes(dsply, root, CWEventMask, &sattr);
 
 	grab_keysym(root, MODIFIER, KEY_CYCLEPREV);

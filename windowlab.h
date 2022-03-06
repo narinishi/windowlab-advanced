@@ -303,6 +303,7 @@ extern void get_mouse_position(int *, int *);
 extern void fix_position(Client *);
 extern void refix_position(Client *, XConfigureRequestEvent *);
 extern void copy_dims(Rect *, Rect *);
+extern int gettextprop(Window, Atom, char *, unsigned int);
 #ifdef DEBUG
 extern void show_event(XEvent);
 extern void dump(Client *);
@@ -310,6 +311,7 @@ extern void dump_clients(void);
 #endif
 
 // taskbar.c
+extern char statustext[256];
 extern Window taskbar;
 #ifdef XFT
 extern XftDraw *tbxftdraw;
@@ -322,6 +324,7 @@ extern void rclick_taskbar(int);
 extern void rclick_root(void);
 extern void redraw_taskbar(void);
 extern float get_button_width(void);
+extern void update_status();
 
 // menufile.c
 extern int do_menuitems;

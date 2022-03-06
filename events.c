@@ -511,6 +511,12 @@ static void handle_property_change(XPropertyEvent *e)
 			redraw(c);
 			redraw_taskbar();
 		}
+	} else {
+		if (e->window == RootWindow(dsply, screen)) {
+			if (e->atom == XA_WM_NAME || e->atom == net_wm_name) {
+				update_status();
+			}
+		}
 	}
 }
 

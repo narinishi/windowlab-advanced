@@ -18,23 +18,38 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <X11/Xatom.h>
 #include "windowlab.h"
 
 static void draw_menubar(void);
 static unsigned int update_menuitem(int);
 static void draw_menuitem(unsigned int, unsigned int);
 
+char statustext[256] = "Windowlab";
+
 Window taskbar;
 #ifdef XFT
 XftDraw *tbxftdraw;
 #endif
+
+int
+get_status_width(void) {
+#ifdef XFT
+	XGlyphInfo info;
+	XftTextExtentsUtf8(dsply, xftfont, (unsigned char *)statustext, strlen(statustext), &info);
+	return info.width + 2*SPACE;
+#else
+	return 200; // FIXME
+#endif
+}
+
 
 void make_taskbar(void)
 {
 	XSetWindowAttributes pattr;
 
 	pattr.override_redirect = True;
-	pattr.background_pixel = empty_col.pixel;
+	pattr.background_pixel = inactive_col.pixel;
 	pattr.border_pixel = border_col.pixel;
 	pattr.event_mask = ChildMask|ButtonPressMask|ExposureMask|EnterWindowMask;
 	taskbar = XCreateWindow(dsply, root, 0 - DEF_BORDERWIDTH, 0 - DEF_BORDERWIDTH, DisplayWidth(dsply, screen), BARHEIGHT() - DEF_BORDERWIDTH, DEF_BORDERWIDTH, DefaultDepth(dsply, screen), CopyFromParent, DefaultVisual(dsply, screen), CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWEventMask, &pattr);
@@ -118,7 +133,7 @@ void lclick_taskbar(int x)
 
 		bounddims.x = 0;
 		bounddims.y = 0;
-		bounddims.width = DisplayWidth(dsply, screen);
+		bounddims.width = DisplayWidth(dsply, screen) - get_status_width();
 		bounddims.height = BARHEIGHT();
 
 		constraint_win = XCreateWindow(dsply, root, bounddims.x, bounddims.y, bounddims.width, bounddims.height, 0, CopyFromParent, InputOnly, CopyFromParent, 0, &pattr);
@@ -135,7 +150,9 @@ void lclick_taskbar(int x)
 		button_clicked = (unsigned int)(x / button_width);
 		for (i = 0, c = head_client; i < button_clicked; i++)
 		{
-			c = c->next;
+			if (c->next)
+				c = c->next;
+			else break;
 		}
 
 		lclick_taskbutton(NULL, c);
@@ -269,7 +286,7 @@ void rclick_root(void)
 void redraw_taskbar(void)
 {
 	unsigned int i;
-	int button_startx, button_iwidth;
+	int button_startx = 0, button_iwidth = 0;
 	float button_width;
 	Client *c;
 
@@ -283,7 +300,6 @@ void redraw_taskbar(void)
 
 	for (c = head_client, i = 0; c != NULL; c = c->next, i++)
 	{
-		button_startx = (int)(i * button_width);
 		button_iwidth = (unsigned int)(((i + 1) * button_width) - button_startx);
 		if (button_startx != 0)
 		{
@@ -297,7 +313,7 @@ void redraw_taskbar(void)
 		{
 			XFillRectangle(dsply, taskbar, inactive_gc, button_startx, 0, button_iwidth, BARHEIGHT() - DEF_BORDERWIDTH);
 		}
-		if (!c->trans && c->name != NULL)
+		if (!c->trans)
 		{
 #ifdef XFT
 			XftDrawStringUtf8(tbxftdraw, &xft_detail, xftfont, button_startx + SPACE, SPACE + xftfont->ascent, (unsigned char *)c->name, strlen(c->name));
@@ -305,7 +321,13 @@ void redraw_taskbar(void)
 			XDrawString(dsply, taskbar, text_gc, button_startx + SPACE, SPACE + font->ascent, c->name, strlen(c->name));
 #endif
 		}
+		button_startx = (int)((i+1) * button_width);
 	}
+#ifdef XFT
+	XftDrawStringUtf8(tbxftdraw, &xft_detail, xftfont, button_startx + SPACE, SPACE + xftfont->ascent, (unsigned char *)statustext, strlen(statustext));
+#else
+	XDrawString(dsply, taskbar, text_gc, button_startx + SPACE, SPACE + font->ascent, statustext, strlen(statustext));
+#endif
 }
 
 void draw_menubar(void)
@@ -393,7 +415,7 @@ float get_button_width(void)
 		nwins++;
 		c = c->next;
 	}
-	return ((float)(DisplayWidth(dsply, screen) + DEF_BORDERWIDTH)) / nwins;
+	return ((float)(DisplayWidth(dsply, screen)) - get_status_width())/ nwins;
 }
 
 void cycle_previous(void)
@@ -438,4 +460,10 @@ void cycle_next(void)
 		else c = c->next;
 		lclick_taskbutton(NULL, c);
 	}
+}
+
+void update_status() {
+	if (!gettextprop(root, XA_WM_NAME, statustext, sizeof(statustext)))
+		strcpy(statustext, "dwm-"VERSION);
+	redraw_taskbar();
 }
