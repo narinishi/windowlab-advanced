@@ -1,3 +1,17 @@
+# My fork of Windowlab
+
+This fork of windowlab focuses on fixing things that have changed over the years, like the process of getting window titles and Xft fonts. Suggestions for more fixes are welcome.
+
+Changes from original windowlab:
+
+ - window titles are retrieved in a much more modern way (before, half the window titles were missing)
+ - better Xft support
+ - Mod4 as the main mod key
+
+---
+
+below is the original README:
+
 # WindowLab
 
 ## Rethinking the window manager
