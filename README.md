@@ -5,9 +5,10 @@ This fork of windowlab focuses on fixing things that have changed over the years
 Changes from original windowlab:
 
  - window titles are retrieved in a much more modern way (before, half the window titles were missing)
- - better Xft support
+ - status text
+ - better Xft support, UTF-8
+ - sxhkd works when all windows have been deselected
  - Mod4 as the main mod key
- - Sxhkd works when all windows have been deselected
 
 ---
 
