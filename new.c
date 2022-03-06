@@ -137,9 +137,9 @@ void make_new_client(Window w)
 	}
 
 	// // if no client has focus give focus to the new client
+	check_focus(c);
 	if (focused_client == NULL)
 	{
-		check_focus(c);
 		focused_client = c;
 	}
 

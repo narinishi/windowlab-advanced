@@ -7,6 +7,7 @@ Changes from original windowlab:
  - window titles are retrieved in a much more modern way (before, half the window titles were missing)
  - better Xft support
  - Mod4 as the main mod key
+ - Sxhkd works when all windows have been deselected
 
 ---
 
