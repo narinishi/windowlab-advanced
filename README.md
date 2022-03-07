@@ -10,6 +10,10 @@ Changes from original windowlab:
  - sxhkd works when all windows have been deselected
  - Mod4 as the main mod key
 
+Other changes:
+
+ - Added a gitignore
+
 ---
 
 below is the original README:
