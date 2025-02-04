@@ -1,3 +1,17 @@
+advanced (2015-02-##)
+
+* added patch from debian to display cursor when started
+* corrected mwm info structure definition, now utilized for new features:
+        * will not attempt to display titlebars for title-less windows
+        * special handling for torn-off menus
+* simpler minimize icon
+* added active + inactive coloring for buttons
+* features from Harmansky's fork
+        * modern window title support
+        * status text (now improved!)
+        * utilize utf8 for xft
+        * sxhkd works when all windows deselected
+
 1.40 (2010-04-04)
 
 * integrated a change from Simon Engelsman (thanks!):

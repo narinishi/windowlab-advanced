@@ -30,11 +30,13 @@ int screen;
 XFontStruct *font = NULL;
 #ifdef XFT
 XftFont *xftfont = NULL;
-XftColor xft_detail;
+XftColor xft_detail, xft_inactive_detail;
 #endif
 GC string_gc, border_gc, text_gc, active_gc, depressed_gc, inactive_gc, menu_gc, selected_gc, empty_gc;
 XColor border_col, text_col, active_col, depressed_col, inactive_col, menu_col, selected_col, empty_col;
-Cursor resize_curs;
+GC active_button_gc, inactive_button_gc;
+XColor active_button_col, inactive_button_col, inactive_text_col;
+Cursor resize_curs, root_curs;
 Atom wm_state, wm_change_state, wm_protos, wm_delete, wm_cmapwins, net_wm_name;
 #ifdef MWM_HINTS
 Atom mwm_hints;
@@ -52,6 +54,9 @@ char *opt_inactive = DEF_INACTIVE;
 char *opt_menu = DEF_MENU;
 char *opt_selected = DEF_SELECTED;
 char *opt_empty = DEF_EMPTY;
+char *opt_inactive_text = DEF_INACTIVE_TEXT;
+char *opt_active_button = DEF_ACTIVE_BUTTON;
+char *opt_inactive_button = DEF_INACTIVE_BUTTON;
 char *opt_display = NULL;
 #ifdef SHAPE
 Bool shape;
@@ -171,6 +176,10 @@ static void setup_display(void)
 	XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_selected, &selected_col, &dummyc);
 	XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_empty, &empty_col, &dummyc);
 
+        XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_active_button, &active_button_col, &dummyc);
+        XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_inactive_button, &inactive_button_col, &dummyc);
+        XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_inactive_text, &inactive_text_col, &dummyc);
+
 	depressed_col.pixel = active_col.pixel;
 	depressed_col.red = active_col.red - ACTIVE_SHADOW;
 	depressed_col.green = active_col.green - ACTIVE_SHADOW;
@@ -186,6 +195,12 @@ static void setup_display(void)
 	xft_detail.color.blue = text_col.blue;
 	xft_detail.color.alpha = 0xffff;
 	xft_detail.pixel = text_col.pixel;
+
+	xft_inactive_detail.color.red = inactive_text_col.red;
+	xft_inactive_detail.color.green = inactive_text_col.green;
+	xft_inactive_detail.color.blue = inactive_text_col.blue;
+	xft_inactive_detail.color.alpha = 0xffff;
+	xft_inactive_detail.pixel = inactive_text_col.pixel;
 
 	xftfont = XftFontOpenName(dsply, DefaultScreen(dsply), opt_font);
 	if (xftfont == NULL)
@@ -206,6 +221,7 @@ static void setup_display(void)
 	shape = XShapeQueryExtension(dsply, &shape_event, &dummy);
 #endif
 
+	root_curs = XCreateFontCursor(dsply, XC_X_cursor);
 	resize_curs = XCreateFontCursor(dsply, XC_fleur);
 
 	/* find out which modifier is NumLock - we'll use this when grabbing every combination of modifiers we can think of */
@@ -241,6 +257,11 @@ static void setup_display(void)
 	text_gc = XCreateGC(dsply, root, GCFunction|GCForeground|GCFont, &gv);
 #endif
 
+        gv.foreground = active_button_col.pixel;
+        active_button_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);
+        gv.foreground = inactive_button_col.pixel;
+        inactive_button_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);
+
 	gv.foreground = active_col.pixel;
 	active_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);
 
@@ -260,7 +281,8 @@ static void setup_display(void)
 	empty_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);
 
 	sattr.event_mask = ChildMask|ColormapChangeMask|ButtonMask|PropertyChangeMask;
-	XChangeWindowAttributes(dsply, root, CWEventMask, &sattr);
+	sattr.cursor = root_curs;
+        XChangeWindowAttributes(dsply, root, CWEventMask|CWCursor, &sattr);
 
 	grab_keysym(root, MODIFIER, KEY_CYCLEPREV);
 	grab_keysym(root, MODIFIER, KEY_CYCLENEXT);

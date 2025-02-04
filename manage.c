@@ -241,6 +241,15 @@ void move(Client *c)
 
 void resize(Client *c, int x, int y)
 {
+#ifdef MWM_HINTS
+        if (!c->has_title || c->is_tearoff)
+        {
+                XUngrabServer(dsply);
+                ungrab();
+                return;
+        }
+#endif
+
 	XEvent ev;
 	Client *exposed_c;
 	Rect newdims, recalceddims, bounddims;
@@ -471,7 +480,7 @@ void resize(Client *c, int x, int y)
 	// unhide real window's frame
 	XMapWindow(dsply, c->frame);
 
-	XSetInputFocus(dsply, c->window, RevertToNone, CurrentTime);
+	XSetInputFocus(dsply, c->window, RevertToParent, CurrentTime);
 
 	send_config(c);
 	XDestroyWindow(dsply, constraint_win);
@@ -588,6 +597,7 @@ void write_titletext(Client *c, Window bar_win)
 		(void) bar_win; // fixes a warning
 		XftDrawStringUtf8(c->xftdraw, &xft_detail, xftfont, SPACE, SPACE + xftfont->ascent, (unsigned char *)c->name, strlen(c->name));
 #else
+                XSetForeground(dsply, text_gc, text_col.pixel);
 		XDrawString(dsply, bar_win, text_gc, SPACE, SPACE + font->ascent, c->name, strlen(c->name));
 #endif
 	}

@@ -1,4 +1,10 @@
 TODO
 
+urgent:
+* properly update window size when resized with wrs from wmutils
+* gracefully handle unicode characters when xft -isn't- used
+* fix taskbar alignment issues when odd number of windows
+* add visual indication for minimized tabs
+
 * add EWMH support (back port it from aewm?)
 * allow right clicks on client windows to show WindowLab's menubar as well as being passed to the client

@@ -174,6 +174,12 @@ void fix_position(Client *c)
 #endif
 	
 	titlebarheight = (fullscreen_client == c) ? 0 : BARHEIGHT();
+#ifdef MWM_HINTS
+        if(!c->has_title)
+        {
+                titlebarheight = 0;
+        }
+#endif
 
 	if (c->width < MINWINWIDTH)
 	{
@@ -398,11 +404,12 @@ static void quit_nicely(void)
 	}
 #endif
 	XFreeCursor(dsply, resize_curs);
+	XFreeCursor(dsply, root_curs);
 	XFreeGC(dsply, border_gc);
 	XFreeGC(dsply, text_gc);
 
 	XInstallColormap(dsply, DefaultColormap(dsply, screen));
-	XSetInputFocus(dsply, PointerRoot, RevertToNone, CurrentTime);
+	XSetInputFocus(dsply, PointerRoot, RevertToParent, CurrentTime);
 
 	XCloseDisplay(dsply);
 	exit(0);

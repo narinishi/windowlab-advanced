@@ -82,6 +82,7 @@ void make_new_client(Window w)
 #ifdef MWM_HINTS
 	c->has_title = 1;
 	c->has_border = 1;
+        c->is_tearoff = 0;
 
 	if ((mhints = get_mwm_hints(c->window)))
 	{
@@ -90,6 +91,10 @@ void make_new_client(Window w)
 			c->has_title = mhints->decorations & MWM_DECOR_TITLE;
 			c->has_border = mhints->decorations & MWM_DECOR_BORDER;
 		}
+                if (mhints->status & MWM_STATUS_TEAROFF) {
+                        c->is_tearoff = 1;
+                        c->has_title = 1;
+                }
 		XFree(mhints);
 	}
 #endif
@@ -137,9 +142,10 @@ void make_new_client(Window w)
 	}
 
 	// // if no client has focus give focus to the new client
-	check_focus(c);
+	//check_focus(c);
 	if (focused_client == NULL)
 	{
+                check_focus(c);
 		focused_client = c;
 	}
 
@@ -212,12 +218,17 @@ static void init_position(Client *c)
 static void reparent(Client *c)
 {
 	XSetWindowAttributes pattr;
+#ifdef MWM_HINTS
+        int bar_height = c->has_title ? BARHEIGHT() : 0;
+#else
+        int bar_height = BARHEIGHT();
+#endif
 
 	pattr.override_redirect = True;
 	pattr.background_pixel = empty_col.pixel;
 	pattr.border_pixel = border_col.pixel;
 	pattr.event_mask = ChildMask|ButtonPressMask|ExposureMask|EnterWindowMask;
-	c->frame = XCreateWindow(dsply, root, c->x, c->y - BARHEIGHT(), c->width, c->height + BARHEIGHT(), BORDERWIDTH(c), DefaultDepth(dsply, screen), CopyFromParent, DefaultVisual(dsply, screen), CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWEventMask, &pattr);
+	c->frame = XCreateWindow(dsply, root, c->x, c->y - bar_height, c->width, c->height + bar_height, BORDERWIDTH(c), DefaultDepth(dsply, screen), CopyFromParent, DefaultVisual(dsply, screen), CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWEventMask, &pattr);
 
 #ifdef SHAPE
 	if (shape)
@@ -231,7 +242,7 @@ static void reparent(Client *c)
 	XSelectInput(dsply, c->window, ColormapChangeMask|PropertyChangeMask);
 	XSetWindowBorderWidth(dsply, c->window, 0);
 	XResizeWindow(dsply, c->window, c->width, c->height);
-	XReparentWindow(dsply, c->window, c->frame, 0, BARHEIGHT());
+	XReparentWindow(dsply, c->window, c->frame, 0, bar_height);
 
 	send_config(c);
 }

@@ -39,7 +39,7 @@ get_status_width(void) {
 	XftTextExtentsUtf8(dsply, xftfont, (unsigned char *)statustext, strlen(statustext), &info);
 	return info.width + 2*SPACE;
 #else
-	return 200; // FIXME
+	return 0; // FIXME
 #endif
 }
 
@@ -292,18 +292,20 @@ void redraw_taskbar(void)
 
 	button_width = get_button_width();
 	XClearWindow(dsply, taskbar);
+	Client *local_head = head_client;
 
 	if (showing_taskbar == 0)
 	{
-		return;
+		local_head = NULL; // allows status to be drawn when fullscreen
 	}
 
-	for (c = head_client, i = 0; c != NULL; c = c->next, i++)
+	for (c = local_head, i = 0; c != NULL; c = c->next, i++)
 	{
 		button_iwidth = button_width;
-        XDrawLine(dsply, taskbar, border_gc, button_startx + button_iwidth - 1, 0, button_startx + button_iwidth - 1, BARHEIGHT() - DEF_BORDERWIDTH);
+                XDrawLine(dsply, taskbar, border_gc, button_startx + button_iwidth - 1, 0, button_startx + button_iwidth - 1, BARHEIGHT() - DEF_BORDERWIDTH);
 		button_iwidth--; /* don't overdraw the line */
-		if (c == focused_client)
+                Bool has_focus = c == focused_client;
+		if (has_focus)
 		{
 			XFillRectangle(dsply, taskbar, active_gc, button_startx, 0, button_iwidth, BARHEIGHT() - DEF_BORDERWIDTH);
 		}
@@ -314,8 +316,9 @@ void redraw_taskbar(void)
 		if (!c->trans)
 		{
 #ifdef XFT
-			XftDrawStringUtf8(tbxftdraw, &xft_detail, xftfont, button_startx + SPACE, SPACE + xftfont->ascent, (unsigned char *)c->name, strlen(c->name));
+			XftDrawStringUtf8(tbxftdraw, has_focus ? &xft_detail : &xft_inactive_detail, xftfont, button_startx + SPACE, SPACE + xftfont->ascent, (unsigned char *)c->name, strlen(c->name));
 #else
+                        XSetForeground(dsply, text_gc, has_focus ? text_col.pixel : inactive_text_col.pixel);
 			XDrawString(dsply, taskbar, text_gc, button_startx + SPACE, SPACE + font->ascent, c->name, strlen(c->name));
 #endif
 		}
@@ -323,8 +326,9 @@ void redraw_taskbar(void)
 	}
 	XFillRectangle(dsply, taskbar, inactive_gc, button_startx, 0, DisplayWidth(dsply, screen) - button_startx, BARHEIGHT() - DEF_BORDERWIDTH);
 #ifdef XFT
-	XftDrawStringUtf8(tbxftdraw, &xft_detail, xftfont, button_startx + SPACE, SPACE + xftfont->ascent, (unsigned char *)statustext, strlen(statustext));
+	XftDrawStringUtf8(tbxftdraw, &xft_inactive_detail, xftfont, button_startx + SPACE, SPACE + xftfont->ascent, (unsigned char *)statustext, strlen(statustext));
 #else
+        XSetForeground(dsply, text_gc, inactive_text_col.pixel);
 	XDrawString(dsply, taskbar, text_gc, button_startx + SPACE, SPACE + font->ascent, statustext, strlen(statustext));
 #endif
 }
@@ -334,13 +338,14 @@ void draw_menubar(void)
 	unsigned int i, dw;
 	dw = DisplayWidth(dsply, screen);
 	XFillRectangle(dsply, taskbar, menu_gc, 0, 0, dw, BARHEIGHT() - DEF_BORDERWIDTH);
+        XSetForeground(dsply, text_gc, inactive_text_col.pixel);
 
 	for (i = 0; i < num_menuitems; i++)
 	{
 		if (menuitems[i].label && menuitems[i].command)
 		{
 #ifdef XFT
-			XftDrawStringUtf8(tbxftdraw, &xft_detail, xftfont, menuitems[i].x + (SPACE * 2), xftfont->ascent + SPACE, (unsigned char *)menuitems[i].label, strlen(menuitems[i].label));
+			XftDrawStringUtf8(tbxftdraw, &xft_inactive_detail, xftfont, menuitems[i].x + (SPACE * 2), xftfont->ascent + SPACE, (unsigned char *)menuitems[i].label, strlen(menuitems[i].label));
 #else
 			XDrawString(dsply, taskbar, text_gc, menuitems[i].x + (SPACE * 2), font->ascent + SPACE, menuitems[i].label, strlen(menuitems[i].label));
 #endif
@@ -399,8 +404,9 @@ void draw_menuitem(unsigned int index, unsigned int active)
 		XFillRectangle(dsply, taskbar, menu_gc, menuitems[index].x, 0, menuitems[index].width, BARHEIGHT() - DEF_BORDERWIDTH);
 	}
 #ifdef XFT
-	XftDrawStringUtf8(tbxftdraw, &xft_detail, xftfont, menuitems[index].x + (SPACE * 2), xftfont->ascent + SPACE, (unsigned char *)menuitems[index].label, strlen(menuitems[index].label));
+	XftDrawStringUtf8(tbxftdraw, &xft_inactive_detail, xftfont, menuitems[index].x + (SPACE * 2), xftfont->ascent + SPACE, (unsigned char *)menuitems[index].label, strlen(menuitems[index].label));
 #else
+        XSetForeground(dsply, text_gc, inactive_text_col.pixel);
 	XDrawString(dsply, taskbar, text_gc, menuitems[index].x + (SPACE * 2), font->ascent + SPACE, menuitems[index].label, strlen(menuitems[index].label));
 #endif
 }

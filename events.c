@@ -222,6 +222,7 @@ static void handle_windowbar_click(XButtonEvent *e, Client *c)
 
 		in_box = 1;
 
+                XSetForeground(dsply, text_gc, text_col.pixel);
 		draw_button(c, &text_gc, &depressed_gc, in_box_down);
 
 		do
@@ -244,7 +245,7 @@ static void handle_windowbar_click(XButtonEvent *e, Client *c)
 			}
 		}
 		while (ev.type != ButtonRelease);
-		draw_button(c, &text_gc, &active_gc, in_box_down);
+		draw_button(c, &active_button_gc, &active_gc, in_box_down);
 
 		XUngrabServer(dsply);
 		ungrab();
@@ -379,10 +380,15 @@ static void handle_configure_request(XConfigureRequestEvent *e)
 		refix_position(c, e);
 		gravitate(c, APPLY_GRAVITY);
 		// configure the frame
+#ifdef MWM_HINTS
+                int bar_height = c->has_title ? BARHEIGHT() : 0;
+#else
+                int bar_height = BARHEIGHT();
+#endif
 		wc.x = c->x;
-		wc.y = c->y - BARHEIGHT();
+		wc.y = c->y - bar_height;
 		wc.width = c->width;
-		wc.height = c->height + BARHEIGHT();
+		wc.height = c->height + bar_height;
 		wc.border_width = DEF_BORDERWIDTH;
 		//wc.sibling = e->above;
 		//wc.stack_mode = e->detail;
@@ -396,7 +402,7 @@ static void handle_configure_request(XConfigureRequestEvent *e)
 		send_config(c);
 		// start setting up the next call
 		wc.x = 0;
-		wc.y = BARHEIGHT();
+		wc.y = bar_height;
 	}
 	else
 	{

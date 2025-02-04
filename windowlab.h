@@ -21,8 +21,8 @@
 #ifndef WINDOWLAB_H
 #define WINDOWLAB_H
 
-#define VERSION "1.40"
-#define RELEASEDATE "2010-04-04"
+#define VERSION "1.40adv"
+#define RELEASEDATE "2025-02-##"
 
 #include <errno.h>
 #include <limits.h>
@@ -59,17 +59,20 @@
 #define MWM_DECOR_MINIMIZE (1L << 5)
 #define MWM_DECOR_MAXIMIZE (1L << 6)
 
+#define MWM_STATUS_TEAROFF (1L << 0)
+
 #define _XA_MWM_HINTS "_MOTIF_WM_HINTS"
 
 #define PROP_MWM_HINTS_ELEMENTS	5
 
 typedef struct PropMwmHints
 {
-	CARD32 flags;
-	CARD32 functions;
-	CARD32 decorations;
-	INT32 inputMode;
-	CARD32 status;
+        // do not touch
+	unsigned long flags;
+	unsigned long functions;
+	unsigned long decorations;
+	long inputMode;
+	unsigned long status;
 } PropMwmHints;
 #endif
 
@@ -83,24 +86,27 @@ typedef struct PropMwmHints
 #ifdef XFT
 #define DEF_FONT "Ubuntu:size=12"
 #else
-#define DEF_FONT "-b&h-lucida-medium-r-*-*-10-*-*-*-*-*-*-*"
+#define DEF_FONT "-*-biwidth-medium-r-*-*-14-*-*-*-*-*-*-*"
 #endif
 
 // use named colours, #rgb, #rrggbb or #rrrgggbbb format
-#define DEF_BORDER "#000"
-#define DEF_TEXT "#000"
-#define DEF_ACTIVE "#fd0"
+#define DEF_BORDER "#111"
+#define DEF_TEXT "#fff"
+#define DEF_ACTIVE "#702"
 #define DEF_INACTIVE "#aaa"
 #define DEF_MENU "#ddd"
 #define DEF_SELECTED "#aad"
 #define DEF_EMPTY "#000"
-#define DEF_BORDERWIDTH 2
+#define DEF_ACTIVE_BUTTON "#fa7"
+#define DEF_INACTIVE_BUTTON "#333"
+#define DEF_INACTIVE_TEXT "#000"
+#define DEF_BORDERWIDTH 1
 #define ACTIVE_SHADOW 0x2000 // eg #fff becomes #ddd
 #define SPACE 3
 
 // change MODIFIER to None to remove the need to hold down a modifier key
 // the Windows key should be Mod4Mask and the Alt key is Mod1Mask
-#define MODIFIER Mod4Mask
+#define MODIFIER Mod1Mask
 
 // keys may be used by other apps, so change them here
 #define KEY_CYCLEPREV XK_Tab
@@ -212,6 +218,7 @@ typedef struct Client
 #endif
 #ifdef MWM_HINTS
 	Bool has_title, has_border;
+        Bool is_tearoff;
 #endif
 #ifdef XFT
 	XftDraw *xftdraw;
@@ -243,16 +250,19 @@ extern Rect fs_prevdims;
 extern XFontStruct *font;
 #ifdef XFT
 extern XftFont *xftfont;
-extern XftColor xft_detail;
+extern XftColor xft_detail, xft_inactive_detail;
 #endif
 extern GC border_gc, text_gc, active_gc, depressed_gc, inactive_gc, menu_gc, selected_gc, empty_gc;
+extern GC active_button_gc, inactive_button_gc;
 extern XColor border_col, text_col, active_col, depressed_col, inactive_col, menu_col, selected_col, empty_col;
-extern Cursor resize_curs;
+extern XColor inactive_text_col;
+extern Cursor resize_curs, root_curs;
 extern Atom wm_state, wm_change_state, wm_protos, wm_delete, wm_cmapwins, net_wm_name;
 #ifdef MWM_HINTS
 extern Atom mwm_hints;
 #endif
 extern char *opt_font, *opt_border, *opt_text, *opt_active, *opt_inactive, *opt_menu, *opt_selected, *opt_empty;
+extern char *opt_active_button, *opt_inactive_button, *opt_inactive_text;
 #ifdef SHAPE
 extern int shape, shape_event;
 #endif

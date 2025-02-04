@@ -201,7 +201,8 @@ void redraw(Client *c)
 #endif
 	XDrawLine(dsply, c->frame, border_gc, 0, BARHEIGHT() - DEF_BORDERWIDTH + DEF_BORDERWIDTH / 2, c->width, BARHEIGHT() - DEF_BORDERWIDTH + DEF_BORDERWIDTH / 2);
 	// clear text part of bar
-	if (c == focused_client)
+        Bool has_focus = c == focused_client;
+	if (has_focus)
 	{
 		XFillRectangle(dsply, c->frame, active_gc, 0, 0, c->width - ((BARHEIGHT() - DEF_BORDERWIDTH) * 3), BARHEIGHT() - DEF_BORDERWIDTH);
 	}
@@ -212,22 +213,23 @@ void redraw(Client *c)
 	if (!c->trans && c->name != NULL)
 	{
 #ifdef XFT
-		XftDrawStringUtf8(c->xftdraw, &xft_detail, xftfont, SPACE, SPACE + xftfont->ascent, (XftChar8 *)c->name, strlen(c->name));
+		XftDrawStringUtf8(c->xftdraw, has_focus ? &xft_detail : &xft_inactive_detail, xftfont, SPACE, SPACE + xftfont->ascent, (XftChar8 *)c->name, strlen(c->name));
 #else
+                XSetForeground(dsply, text_gc, has_focus ? text_col.pixel : inactive_text_col.pixel);
 		XDrawString(dsply, c->frame, text_gc, SPACE, SPACE + font->ascent, c->name, strlen(c->name));
 #endif
 	}
 	if (c == focused_client)
 	{
-		draw_hide_button(c, &text_gc, &active_gc);
-		draw_toggledepth_button(c, &text_gc, &active_gc);
-		draw_close_button(c, &text_gc, &active_gc);
+		draw_hide_button(c, &active_button_gc, &active_gc);
+		draw_toggledepth_button(c, &active_button_gc, &active_gc);
+		draw_close_button(c, &active_button_gc, &active_gc);
 	}
 	else
 	{
-		draw_hide_button(c, &text_gc, &inactive_gc);
-		draw_toggledepth_button(c, &text_gc, &inactive_gc);
-		draw_close_button(c, &text_gc, &inactive_gc);
+		draw_hide_button(c, &inactive_button_gc, &inactive_gc);
+		draw_toggledepth_button(c, &inactive_button_gc, &inactive_gc);
+		draw_close_button(c, &inactive_button_gc, &inactive_gc);
 	}
 }
 
@@ -309,7 +311,7 @@ void check_focus(Client *c)
 {
 	if (c != NULL)
 	{
-		XSetInputFocus(dsply, c->window, RevertToNone, CurrentTime);
+		XSetInputFocus(dsply, c->window, RevertToParent, CurrentTime);
 		XInstallColormap(dsply, c->cmap);
 	} else {
 		XSetInputFocus(dsply, PointerRoot, RevertToPointerRoot, CurrentTime);
@@ -352,6 +354,20 @@ Client *get_prev_focused(void)
 
 void draw_hide_button(Client *c, GC *detail_gc, GC *background_gc)
 {
+        int x, topleft_offset;
+        x = c->width - ((BARHEIGHT() - DEF_BORDERWIDTH) * 3);
+        topleft_offset = (BARHEIGHT() / 2) - 5;
+        XFillRectangle(dsply, c->frame, *background_gc, x, 0, BARHEIGHT() - DEF_BORDERWIDTH, BARHEIGHT() - DEF_BORDERWIDTH);
+
+        /* TODO: replace with single draw segments call */
+        XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset - 1, topleft_offset + 2, x + topleft_offset + 3, topleft_offset + 6);
+        XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 0, topleft_offset + 2, x + topleft_offset + 4, topleft_offset + 6);
+        XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 3, topleft_offset + 6, x + topleft_offset + 7, topleft_offset + 2);
+        XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 4, topleft_offset + 6, x + topleft_offset + 8, topleft_offset + 2);
+}
+/*
+void draw_hide_button(Client *c, GC *detail_gc, GC *background_gc)
+{
 	int x, topleft_offset;
 	x = c->width - ((BARHEIGHT() - DEF_BORDERWIDTH) * 3);
 	topleft_offset = (BARHEIGHT() / 2) - 5; // 5 being ~half of 9
@@ -366,7 +382,34 @@ void draw_hide_button(Client *c, GC *detail_gc, GC *background_gc)
 	XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 2, topleft_offset + 4, x + topleft_offset + 0, topleft_offset + 4);
 	XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 2, topleft_offset + 2, x + topleft_offset + 1, topleft_offset + 1);
 }
+*/
 
+void draw_toggledepth_button(Client *c, GC *detail_gc, GC *background_gc)
+{
+	int x, topleft_offset;
+	x = c->width - ((BARHEIGHT() - DEF_BORDERWIDTH) * 2);
+	topleft_offset = (BARHEIGHT() / 2) - 6; // 6 being ~half of 11
+	XFillRectangle(dsply, c->frame, *background_gc, x, 0, BARHEIGHT() - DEF_BORDERWIDTH, BARHEIGHT() - DEF_BORDERWIDTH);
+
+        int x1 = x + topleft_offset;
+        int y1 = topleft_offset;
+
+        XSegment lines[] =
+        {
+                {x1 + 3, y1 + 0, x1 + 9, y1 + 0},
+                {x1 + 2, y1 + 1, x1 + 2, y1 + 2},
+                {x1 + 10, y1 + 1, x1 + 10, y1 + 6},
+                {x1 + 8, y1 + 7, x1 + 9, y1 + 7},
+                {x1 + 0, y1 + 3, x1 + 6, y1 + 3},
+                {x1 + 0, y1 + 5, x1 + 6, y1 + 5},
+                {x1 + 0, y1 + 10, x1 + 6, y1 + 10},
+                {x1 - 1, y1 + 4, x1 - 1, y1 + 9},
+                {x1 + 7, y1 + 4, x1 + 7, y1 + 9}
+        };
+
+        XDrawSegments(dsply, c->frame, *detail_gc, lines, sizeof(lines) / sizeof(lines[0]));
+}
+/*
 void draw_toggledepth_button(Client *c, GC *detail_gc, GC *background_gc)
 {
 	int x, topleft_offset;
@@ -377,7 +420,43 @@ void draw_toggledepth_button(Client *c, GC *detail_gc, GC *background_gc)
 	XDrawRectangle(dsply, c->frame, *detail_gc, x + topleft_offset, topleft_offset, 7, 7);
 	XDrawRectangle(dsply, c->frame, *detail_gc, x + topleft_offset + 3, topleft_offset + 3, 7, 7);
 }
+*/
 
+void draw_close_button(Client *c, GC *detail_gc, GC *background_gc)
+{
+        int x, topleft_offset;
+        x = c->width - (BARHEIGHT() - DEF_BORDERWIDTH);
+        topleft_offset = (BARHEIGHT() / 2) - 5;
+        XFillRectangle(dsply, c->frame, *background_gc, x, 0, BARHEIGHT() - DEF_BORDERWIDTH, BARHEIGHT() - DEF_BORDERWIDTH);
+
+        int x1 = x + topleft_offset;
+        int y1 = topleft_offset;
+
+        XRectangle rectangles[] =
+        {
+                {x1 + 0, y1 + 1, 2, 2},
+                {x1 + 1, y1 + 2, 2, 2},
+                {x1 + 6, y1 + 1, 2, 2},
+                {x1 + 5, y1 + 2, 2, 2},
+                {x1 + 1, y1 + 5, 2, 2},
+                {x1 + 0, y1 + 6, 2, 2},
+                {x1 + 5, y1 + 5, 2, 2},
+                {x1 + 6, y1 + 6, 2, 2}
+        };
+
+        XFillRectangles(dsply, c->frame, *detail_gc, rectangles, sizeof(rectangles) / sizeof(rectangles[0]));
+
+        XSegment lines[] =
+        {
+                {x1 - 1, y1 + 1, x1 + 0, y1 + 0},
+                {x1 - 1, y1 + 7, x1 + 0, y1 + 8},
+                {x1 + 7, y1 + 0, x1 + 8, y1 + 1},
+                {x1 + 7, y1 + 8, x1 + 8, y1 + 7}
+        };
+
+        XDrawSegments(dsply, c->frame, *detail_gc, lines, sizeof(lines) / sizeof(lines[0]));
+}
+/*
 void draw_close_button(Client *c, GC *detail_gc, GC *background_gc)
 {
 	int x, topleft_offset;
@@ -393,6 +472,7 @@ void draw_close_button(Client *c, GC *detail_gc, GC *background_gc)
 	XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 1, topleft_offset + 7, x + topleft_offset + 7, topleft_offset + 1);
 	XDrawLine(dsply, c->frame, *detail_gc, x + topleft_offset + 1, topleft_offset + 8, x + topleft_offset + 8, topleft_offset + 1);
 }
+*/
 
 
 void
