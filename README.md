@@ -1,4 +1,4 @@
-# My fork of Windowlab
+# Yet another fork of Windowlab
 
 This fork of windowlab focuses on fixing things that have changed over the years, like the process of getting window titles and Xft fonts. Suggestions for more fixes are welcome.
 
