@@ -34,8 +34,8 @@ XftColor xft_detail, xft_inactive_detail;
 #endif
 GC string_gc, border_gc, text_gc, active_gc, depressed_gc, inactive_gc, menu_gc, selected_gc, empty_gc;
 XColor border_col, text_col, active_col, depressed_col, inactive_col, menu_col, selected_col, empty_col;
-GC active_button_gc, inactive_button_gc;
-XColor active_button_col, inactive_button_col, inactive_text_col;
+GC active_button_gc, inactive_button_gc, minimized_gc;
+XColor active_button_col, inactive_button_col, inactive_text_col, minimized_col;
 Cursor resize_curs, root_curs;
 Atom wm_state, wm_change_state, wm_protos, wm_delete, wm_cmapwins, net_wm_name;
 #ifdef MWM_HINTS
@@ -57,6 +57,7 @@ char *opt_empty = DEF_EMPTY;
 char *opt_inactive_text = DEF_INACTIVE_TEXT;
 char *opt_active_button = DEF_ACTIVE_BUTTON;
 char *opt_inactive_button = DEF_INACTIVE_BUTTON;
+char *opt_minimized = DEF_MINIMIZED;
 char *opt_display = NULL;
 #ifdef SHAPE
 Bool shape;
@@ -179,6 +180,7 @@ static void setup_display(void)
         XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_active_button, &active_button_col, &dummyc);
         XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_inactive_button, &inactive_button_col, &dummyc);
         XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_inactive_text, &inactive_text_col, &dummyc);
+        XAllocNamedColor(dsply, DefaultColormap(dsply, screen), opt_minimized, &minimized_col, &dummyc);
 
 	depressed_col.pixel = active_col.pixel;
 	depressed_col.red = active_col.red - ACTIVE_SHADOW;
@@ -261,6 +263,8 @@ static void setup_display(void)
         active_button_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);
         gv.foreground = inactive_button_col.pixel;
         inactive_button_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);
+        gv.foreground = minimized_col.pixel;
+        minimized_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);
 
 	gv.foreground = active_col.pixel;
 	active_gc = XCreateGC(dsply, root, GCFunction|GCForeground, &gv);

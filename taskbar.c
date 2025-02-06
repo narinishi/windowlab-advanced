@@ -309,6 +309,10 @@ void redraw_taskbar(void)
 		{
 			XFillRectangle(dsply, taskbar, active_gc, button_startx, 0, button_iwidth, BARHEIGHT() - DEF_BORDERWIDTH);
 		}
+                else if (c->hidden)
+                {
+                        XFillRectangle(dsply, taskbar, minimized_gc, button_startx, 0, button_iwidth, BARHEIGHT() - DEF_BORDERWIDTH);
+                }
 		else
 		{
 			XFillRectangle(dsply, taskbar, inactive_gc, button_startx, 0, button_iwidth, BARHEIGHT() - DEF_BORDERWIDTH);
@@ -420,7 +424,9 @@ float get_button_width(void)
 		nwins++;
 		c = c->next;
 	}
-	return ((float)(DisplayWidth(dsply, screen)) - get_status_width())/ nwins;
+       int offset_width = get_status_width();
+       if (offset_width == 0) offset_width = -DEF_BORDERWIDTH;
+	return ((float)(DisplayWidth(dsply, screen)) - offset_width)/ nwins;
 }
 
 void cycle_previous(void)

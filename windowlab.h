@@ -100,6 +100,7 @@ typedef struct PropMwmHints
 #define DEF_ACTIVE_BUTTON "#fa7"
 #define DEF_INACTIVE_BUTTON "#333"
 #define DEF_INACTIVE_TEXT "#000"
+#define DEF_MINIMIZED "#988"
 #define DEF_BORDERWIDTH 1
 #define ACTIVE_SHADOW 0x2000 // eg #fff becomes #ddd
 #define SPACE 3
@@ -253,7 +254,7 @@ extern XftFont *xftfont;
 extern XftColor xft_detail, xft_inactive_detail;
 #endif
 extern GC border_gc, text_gc, active_gc, depressed_gc, inactive_gc, menu_gc, selected_gc, empty_gc;
-extern GC active_button_gc, inactive_button_gc;
+extern GC active_button_gc, inactive_button_gc, minimized_gc;
 extern XColor border_col, text_col, active_col, depressed_col, inactive_col, menu_col, selected_col, empty_col;
 extern XColor inactive_text_col;
 extern Cursor resize_curs, root_curs;
